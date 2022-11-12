@@ -139,6 +139,82 @@ set.seed(123)
 which(base$CS2==999)
 sum(table(base$edad))
 
+#....................................................................................................
+#ENAHO
+setwd("C:/Users/marip/OneDrive/Escritorio/2022 ll Semestre/Encuestas")
+library(haven)
+ENAHO2021=as.data.frame(read_sav("ENAHO 2021.sav"))
+names(ENAHO2021)
+
+#Recodificación de variables
+library(car)
+ENAHO2021=subset(ENAHO2021,A5>=18)
+ENAHO2021$A5=as.numeric(ENAHO2021$A5)
+ENAHO2021$NivInst=as.numeric(ENAHO2021$NivInst)
+ENAHO2021$edadE=as.factor(recode(ENAHO2021$A5,"18:29 ='18-29';30:49='30-49';50:97='50 o mas'"))
+ENAHO2021$educaE=as.factor(recode(ENAHO2021$NivInst,"0:2='Primaria';3:6='Secundaria';7:8='Universitaria'"))
+baseE=subset(ENAHO2021,educaE!=99)
+
+
+
+library(survey)
+diseno<-svydesign(ids=~1, data=baseE, weight=~FACTOR)
+
+#Tablas con valores asignados por el factor
+A=svytable(~educaE+edadE+A4,design=diseno)
+A
+
+#Tablas de frecuencia relativa
+A/sum(A)
+
+
+#Buscar valores faltantes
+table(ENAHO2021$A4)
+
+table(ENAHO2021$A5)
+max(ENAHO2021$A5)
+
+table(ENAHO2021$educaE)
+#Hay 7 valores faltantes en educacion
+
+#Buscamos la posición de los valores faltantes
+ENAHO2021[ENAHO2021$educaE==99,1:5]
+
+
+#numeros aleatorios para la educacion
+set.seed(123)
+(aleat.ed = runif(7, min=0 , max=1))
+
+#Sustituir los valores
+
+baseE2=as.data.frame(read_sav("ENAHO 2021.sav"))
+baseE2$A5=as.numeric(baseE2$A5)
+baseE2$NivInst=as.numeric(baseE2$NivInst)
+baseE2$edadE=as.factor(recode(baseE2$A5,"18:29 ='18-29';30:49='30-49';50:97='50 o mas'"))
+baseE2$educaE=as.factor(recode(baseE2$NivInst,"0:2='Primaria';3:6='Secundaria';7:8='Universitaria'"))
+
+baseE2[c(1027,3666,3710,3760,28801,30705,30706),"educaE"]=c("Primaria","Universitaria","Secundaria","Universitaria","Universitaria","Primaria","Secundaria")
+#baseE2[c(1027,3666,3710,3760,28801,30705,30706),"edadE"]=c("30-49","50 o mas","30-49","50 o mas","50 o mas","18-29","30-49")
+
+#Verificamos que se hizo el cambio
+baseE2[c(1027,3666,3710,3760,28801,30705,30706),"educaE"]
+
+#Realizamos de nuevo los cuadros, ahora sin valores faltantes
+baseE2=subset(baseE2,A5>=18)
+baseE2$edadE=as.factor(recode(baseE2$A5,"18:29 ='18-29';30:49='30-49';50:97='50 o mas'"))
+diseno2<-svydesign(ids=~1, data=baseE2, weight=~FACTOR)
+
+#Tablas con valores asignados por el factor
+B=svytable(~educaE+edadE+A4,design=diseno2)
+B
+
+#Tablas de frecuencia relativa
+B/sum(B)
+
+
+
+
 
 #.........................................................................................
+
 
